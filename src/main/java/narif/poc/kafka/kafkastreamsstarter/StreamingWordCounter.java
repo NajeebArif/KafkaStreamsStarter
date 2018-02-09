@@ -39,7 +39,8 @@ public class StreamingWordCounter {
 		final KStream<String, String> source = builder.stream("stream-source-topic");
 		source.flatMapValues(value -> Arrays.asList(value.toLowerCase(Locale.getDefault()).split("\\W+")))
 				.groupBy((key, value) -> value)
-				.count(Materialized.<String, Long, KeyValueStore<Bytes, byte[]>>as("count-store")).toStream()
+				.count(Materialized.<String, Long, KeyValueStore<Bytes, byte[]>>as("count-store"))
+				.toStream()
 				.to("stream-sink-topic", Produced.with(Serdes.String(), Serdes.Long()));
 
 		final Topology topology = builder.build();
@@ -57,8 +58,8 @@ public class StreamingWordCounter {
 		});
 
 		try {
-			latch.await();
 			stream.start();
+			latch.await();
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
